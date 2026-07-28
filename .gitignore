@@ -1,0 +1,11 @@
+﻿venv/
+data/raw/
+data/processed/
+models/*.pt
+models/*.pth
+exports/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+wandb/
+.env
