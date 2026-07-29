@@ -1,6 +1,6 @@
 """
-Script de prediction sur une photo unique.
-Pipeline: DINOv2 embedding + Test-Time Augmentation + classifieur entraine + severite par segmentation.
+Script de prediction sur une photo unique - VERSION FINALE (modele propre, sans fuite).
+Pipeline: DINOv2 embedding + Test-Time Augmentation + MLP entraine (final_corrected_best.pt) + severite par segmentation.
 
 Usage: python src/predict.py chemin/vers/photo.jpg
 """
@@ -43,7 +43,6 @@ def ratio_to_severity(ratio):
         return 2, "Severe"
 
 def get_tta_views(pil_image):
-    """Genere plusieurs vues augmentees de l'image pour le Test-Time Augmentation."""
     views = [pil_image]
     views.append(TF.hflip(pil_image))
     views.append(TF.vflip(pil_image))
@@ -52,16 +51,16 @@ def get_tta_views(pil_image):
     views.append(TF.center_crop(pil_image, crop_size))
     return views
 
-class MultiTaskHead(nn.Module):
-    def __init__(self, embedding_dim, n_disease_classes, n_severity_classes=3):
+class MLPHead(nn.Module):
+    def __init__(self, embedding_dim, n_classes):
         super().__init__()
-        self.shared = nn.Sequential(nn.Linear(embedding_dim, 256), nn.ReLU(), nn.Dropout(0.2))
-        self.disease_head = nn.Linear(256, n_disease_classes)
-        self.severity_head = nn.Linear(256, n_severity_classes)
-
+        self.net = nn.Sequential(
+            nn.Linear(embedding_dim, 256), nn.ReLU(), nn.Dropout(0.3),
+            nn.Linear(256, 128), nn.ReLU(), nn.Dropout(0.2),
+            nn.Linear(128, n_classes)
+        )
     def forward(self, x):
-        shared_features = self.shared(x)
-        return self.disease_head(shared_features), self.severity_head(shared_features)
+        return self.net(x)
 
 def main():
     if len(sys.argv) < 2:
@@ -83,23 +82,13 @@ def main():
     dino_model = AutoModel.from_pretrained(MODEL_NAME).to(device)
     dino_model.eval()
 
-    # --- Choix du meilleur modele disponible (priorite: combined > baseline) ---
-    import os
-    if os.path.exists("models/linear_probe_combined_best.pt"):
-        model_path = "models/linear_probe_combined_best.pt"
-        embedding_dim = 384
-        clf = nn.Linear(embedding_dim, n_classes)
-        clf.load_state_dict(torch.load(model_path, map_location="cpu"))
-        print(f"Modele charge: {model_path} (entraine sur PlantVillage+PlantDoc)")
-    else:
-        model_path = "models/linear_probe_best.pt"
-        embedding_dim = 384
-        clf = nn.Linear(embedding_dim, n_classes)
-        clf.load_state_dict(torch.load(model_path, map_location="cpu"))
-        print(f"Modele charge: {model_path} (baseline PlantVillage uniquement)")
+    embedding_dim = 384
+    model_path = "models/final_corrected_best.pt"
+    clf = MLPHead(embedding_dim, n_classes)
+    clf.load_state_dict(torch.load(model_path, map_location="cpu"))
     clf.eval()
+    print(f"Modele charge: {model_path} (MLP, PlantVillage+PlantDoc, sans fuite - 69.2% +/- 0.6% sur PlantDoc)")
 
-    # --- Test-Time Augmentation: prediction sur plusieurs vues, moyenne des probabilites ---
     print("\nGeneration des vues TTA (image originale + flips + crop centre)...")
     views = get_tta_views(pil_image)
     print(f"{len(views)} vues generees.")
@@ -124,7 +113,6 @@ def main():
         marker = " <-- PREDICTION" if rank == 1 else ""
         print(f"{rank}. {labels_names[idx]:<55} {prob.item()*100:5.1f}%{marker}")
 
-    # --- Severite par segmentation (independante du reseau) ---
     print("\n" + "="*60)
     print("=== SEVERITE (segmentation couleur, independante du modele) ===")
     print("="*60)
@@ -134,8 +122,10 @@ def main():
     print(f"Niveau de severite: {sev_name} (niveau {sev_id}/2)")
 
     print("\n" + "="*60)
-    print("NOTE: prediction basee sur DINOv2-small + classifieur lineaire")
-    print("entraine sur PlantVillage+PlantDoc (72.4% accuracy mesuree sur PlantDoc test).")
+    print("NOTE: prediction basee sur DINOv2-small + MLP entraine sur PlantVillage+PlantDoc.")
+    print("Performance mesuree (validation croisee, 3 seeds, sans fuite de donnees):")
+    print("  PlantDoc (terrain): 69.2% +/- 0.6% accuracy")
+    print("  PlantVillage (labo): ~97-98% accuracy")
     print("La confiance affichee est un indicateur, pas une garantie absolue.")
     print("="*60)
 
