@@ -83,11 +83,11 @@ def main():
     dino_model.eval()
 
     embedding_dim = 384
-    model_path = "models/final_corrected_best.pt"
+    model_path = "models/PRODUCTION_MODEL.pt"
     clf = MLPHead(embedding_dim, n_classes)
     clf.load_state_dict(torch.load(model_path, map_location="cpu"))
     clf.eval()
-    print(f"Modele charge: {model_path} (MLP, PlantVillage+PlantDoc, sans fuite - 69.2% +/- 0.6% sur PlantDoc)")
+    print(f"Modele charge: {model_path} (MLP, PlantVillage+PlantDoc, sans fuite - 68.35% (modele de production, seed=42, trace de bout en bout) sur PlantDoc)")
 
     print("\nGeneration des vues TTA (image originale + flips + crop centre)...")
     views = get_tta_views(pil_image)
@@ -124,7 +124,7 @@ def main():
     print("\n" + "="*60)
     print("NOTE: prediction basee sur DINOv2-small + MLP entraine sur PlantVillage+PlantDoc.")
     print("Performance mesuree (validation croisee, 3 seeds, sans fuite de donnees):")
-    print("  PlantDoc (terrain): 69.2% +/- 0.6% accuracy")
+    print("  PlantDoc (terrain): 68.35% (modele de production, seed=42, trace de bout en bout) accuracy")
     print("  PlantVillage (labo): ~97-98% accuracy")
     print("La confiance affichee est un indicateur, pas une garantie absolue.")
     print("="*60)
