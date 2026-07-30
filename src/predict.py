@@ -83,11 +83,11 @@ def main():
     dino_model.eval()
 
     embedding_dim = 384
-    model_path = "models/PRODUCTION_MODEL.pt"
+    model_path = "models/PRODUCTION_MODEL_ROBUST.pt"
     clf = MLPHead(embedding_dim, n_classes)
     clf.load_state_dict(torch.load(model_path, map_location="cpu"))
     clf.eval()
-    print(f"Modele charge: {model_path} (MLP, PlantVillage+PlantDoc, sans fuite - 68.35% (modele de production, seed=42, trace de bout en bout) sur PlantDoc)")
+    print(f"Modele charge: {model_path} (MLP robuste, entraine avec augmentation de corruptions) sur PlantDoc)")
 
     print("\nGeneration des vues TTA (image originale + flips + crop centre)...")
     views = get_tta_views(pil_image)
