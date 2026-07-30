@@ -1,0 +1,32 @@
+{
+  "clean_accuracy": 0.695,
+  "corruptions": {
+    "clean": 0.695,
+    "blur (flou de mouvement/mise au point)": [
+      0.65,
+      0.575,
+      0.39
+    ],
+    "noise (bruit capteur)": [
+      0.59,
+      0.5,
+      0.37
+    ],
+    "brightness (sous-exposition)": [
+      0.68,
+      0.67,
+      0.59
+    ],
+    "contrast (faible contraste)": [
+      0.685,
+      0.655,
+      0.565
+    ],
+    "jpeg (compression forte)": [
+      0.665,
+      0.59,
+      0.36
+    ]
+  },
+  "n_samples": 200
+}
