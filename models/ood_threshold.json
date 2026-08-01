@@ -1,0 +1,4 @@
+{
+  "threshold": 42.18188505889094,
+  "method": "mahalanobis_distance_shared_covariance_99th_percentile"
+}
