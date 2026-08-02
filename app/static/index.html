@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease | AI Diagnostics</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+    
+    <nav class="navbar glass">
+        <div class="nav-content">
+            <div class="logo">
+                <i class="fa-solid fa-leaf text-gradient"></i>
+                <span class="font-bold">Agri<span class="text-gradient">Vision</span> AI</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="text-center fade-in">
+            <h1 class="hero-title">Diagnostic Intelligent <br/>des Maladies des Plantes</h1>
+            <p class="hero-subtitle">Propulsé par DINOv2. Importez une photo de votre feuille et obtenez une analyse instantanée de classe mondiale.</p>
+        </header>
+
+        <div class="app-layout slide-up">
+            <!-- Left Column: Upload -->
+            <div class="upload-section glass">
+                <div class="upload-area" id="drop-zone">
+                    <input type="file" id="file-input" accept="image/*" hidden>
+                    <div class="upload-content" id="upload-placeholder">
+                        <i class="fa-solid fa-cloud-arrow-up text-gradient fa-3x"></i>
+                        <h3>Glissez-déposez votre image</h3>
+                        <p>ou cliquez pour parcourir (JPG, PNG)</p>
+                    </div>
+                    <img id="image-preview" class="hidden" alt="Aperçu">
+                </div>
+                <div class="actions">
+                    <button id="reset-btn" class="btn btn-secondary hidden" onclick="resetApp()">
+                        <i class="fa-solid fa-rotate-right"></i> Nouvelle Image
+                    </button>
+                    <button id="analyze-btn" class="btn btn-primary" onclick="analyzeImage()" disabled>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Analyser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="results-section glass relative">
+                <div id="loading-overlay" class="loading-overlay hidden">
+                    <div class="spinner"></div>
+                    <p>Analyse par l'Intelligence Artificielle en cours...</p>
+                </div>
+
+                <div id="empty-state" class="empty-state">
+                    <i class="fa-solid fa-microscope opacity-50 fa-4x mb-4"></i>
+                    <p>En attente d'une image pour l'analyse...</p>
+                </div>
+
+                <div id="results-content" class="results-content hidden fade-in">
+                    <!-- OOD Warning -->
+                    <div id="ood-warning" class="alert alert-warning hidden">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <div class="alert-text">
+                            <strong>Hors Distribution :</strong>
+                            <span id="ood-text">Cette image ne ressemble pas à une feuille connue. Le diagnostic est peu fiable.</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Multi Disease Warning -->
+                    <div id="multi-warning" class="alert alert-danger hidden">
+                        <i class="fa-solid fa-virus"></i>
+                        <div class="alert-text">
+                            <strong>Attention :</strong>
+                            <span id="multi-text">Plusieurs maladies détectées simultanément.</span>
+                        </div>
+                    </div>
+
+                    <!-- Severity Widget -->
+                    <div class="severity-card">
+                        <div class="severity-header">
+                            <h4>Niveau de Sévérité</h4>
+                            <span class="severity-badge" id="severity-badge">Léger</span>
+                        </div>
+                        <div class="progress-container mt-3">
+                            <div class="progress-bar" id="severity-bar" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm mt-2">Surface atteinte estimée : <strong id="severity-ratio">0%</strong></p>
+                    </div>
+
+                    <h3 class="mt-6 mb-4">Top Prédictions</h3>
+                    <div id="predictions-list" class="predictions-list">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
